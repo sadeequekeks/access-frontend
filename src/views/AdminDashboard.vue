@@ -70,7 +70,7 @@
               <v-chip size="small" variant="tonal" color="success">Done</v-chip>
             </div>
             <div class="text-h3 font-weight-bold mb-1">{{ completedTickets.length }}</div>
-            <div class="text-body-2 text-medium-emphasis">Completed</div>
+            <div class="text-body-2 text-medium-emphasis">Resolved</div>
           </v-card-text>
         </v-card>
       </v-col>

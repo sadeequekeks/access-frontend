@@ -1,6 +1,6 @@
 <template>
   <v-chip :color="statusColor" variant="flat" size="small">
-    {{ status }}
+    {{ displayStatus }}
   </v-chip>
 </template>
 
@@ -11,7 +11,7 @@ export default {
     status: {
       type: String,
       required: true,
-      validator: (value) => ['Pending', 'In Progress', 'Completed'].includes(value)
+      validator: (value) => ['Pending', 'In Progress', 'Completed', 'Resolved'].includes(value)
     }
   },
   computed: {
@@ -19,9 +19,14 @@ export default {
       const colors = {
         'Pending': 'info',
         'In Progress': 'warning',
-        'Completed': 'success'
+        'Completed': 'success',
+        'Resolved': 'success'
       }
       return colors[this.status] || 'default'
+    },
+    displayStatus() {
+      // Display "Resolved" for both "Completed" and "Resolved" statuses
+      return this.status === 'Completed' ? 'Resolved' : this.status
     }
   }
 }

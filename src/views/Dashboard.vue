@@ -96,7 +96,7 @@
               </v-avatar>
             </div>
             <div class="text-h4 font-weight-bold mb-1">{{ completedCount }}</div>
-            <div class="text-body-2 text-medium-emphasis">Completed</div>
+            <div class="text-body-2 text-medium-emphasis">Resolved</div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -244,7 +244,7 @@
                   </v-avatar>
                 </template>
                 <v-list-item-title class="text-body-2 font-weight-medium mb-1">
-                  Completed
+                  Resolved
                 </v-list-item-title>
                 <v-list-item-subtitle class="text-caption">
                   Request has been resolved

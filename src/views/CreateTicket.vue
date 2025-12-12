@@ -26,111 +26,75 @@
         <v-card elevation="0" border>
           <v-card-text class="pa-6">
             <v-form ref="form" v-model="valid" @submit.prevent="handleSubmit">
-              <!-- Progress Indicator -->
-              <div class="mb-8">
-                <v-stepper
-                  v-model="currentStep"
-                  flat
-                  hide-actions
-                  class="elevation-0"
-                >
-                  <v-stepper-header>
-                    <v-stepper-item
-                      :value="1"
-                      :complete="currentStep > 1"
-                      title="Request Type"
-                      icon="mdi-format-list-bulleted"
-                    ></v-stepper-item>
-                    <v-divider></v-divider>
-                    <v-stepper-item
-                      :value="2"
-                      :complete="currentStep > 2"
-                      title="Details"
-                      icon="mdi-text-box-outline"
-                    ></v-stepper-item>
-                    <v-divider></v-divider>
-                    <v-stepper-item
-                      :value="3"
-                      title="Review"
-                      icon="mdi-check-circle-outline"
-                    ></v-stepper-item>
-                  </v-stepper-header>
-                </v-stepper>
-              </div>
-
-              <!-- Step 1: Request Type -->
-              <div v-show="currentStep === 1" class="step-content">
-                <div class="mb-6">
-                  <h3 class="text-h6 mb-2">Select Request Type</h3>
-                  <p class="text-body-2 text-medium-emphasis mb-4">
-                    Choose the type of access or support you need
-                  </p>
-                </div>
-
-                <v-radio-group
+              <!-- Request Type Dropdown -->
+              <div class="mb-6">
+                <h3 class="text-h6 mb-2">Request Type</h3>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  Select the category and type of request
+                </p>
+                <v-select
                   v-model="form.request_type"
+                  :items="requestTypeItems"
+                  item-title="title"
+                  item-value="value"
+                  variant="outlined"
+                  label="Select Request Type"
+                  prepend-inner-icon="mdi-format-list-bulleted"
                   :rules="[v => !!v || 'Request type is required']"
-                  class="request-type-group"
+                  required
+                  class="mb-4"
                 >
-                  <v-card
-                    v-for="type in requestTypes"
-                    :key="type.value"
-                    :class="['request-type-card mb-3', { 'selected': form.request_type === type.value }]"
-                    @click="form.request_type = type.value"
-                    elevation="0"
-                    border
-                  >
-                    <v-card-text class="pa-4">
-                      <div class="d-flex align-center">
-                        <v-radio :value="type.value" class="mr-3"></v-radio>
-                        <div class="flex-grow-1">
-                          <div class="d-flex align-center mb-1">
-                            <v-icon :color="type.color" class="mr-2">{{ type.icon }}</v-icon>
-                            <span class="text-body-1 font-weight-medium">{{ type.label }}</span>
-                          </div>
-                          <p class="text-caption text-medium-emphasis mb-0">
-                            {{ type.description }}
-                          </p>
-                        </div>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </v-radio-group>
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item v-bind="props">
+                      <template v-slot:prepend>
+                        <v-icon :color="item.raw.color" class="mr-3">{{ item.raw.icon }}</v-icon>
+                      </template>
+                      <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
+                      <v-list-item-subtitle v-if="item.raw.group" class="text-caption">
+                        {{ item.raw.group }}
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-select>
                 
                 <v-text-field
                   v-if="form.request_type === 'Other'"
                   v-model="form.custom_request_type"
-                  label="Specify Request Type"
+                  label="Specify Custom Request Type"
                   variant="outlined"
                   prepend-inner-icon="mdi-pencil"
                   :rules="[
                     v => form.request_type !== 'Other' || !!v || 'Custom request type is required'
                   ]"
-                  class="mt-4"
                   required
+                  hint="Enter the specific type of request"
+                  persistent-hint
                 ></v-text-field>
 
-                <div class="d-flex justify-end mt-6">
-                  <v-btn
-                    color="primary"
-                    size="large"
-                    :disabled="!form.request_type || (form.request_type === 'Other' && !form.custom_request_type)"
-                    @click="currentStep = 2"
-                  >
-                    Next: Add Details
-                    <v-icon end>mdi-arrow-right</v-icon>
-                  </v-btn>
-                </div>
+                <v-alert
+                  v-if="selectedRequestType"
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  class="mt-4"
+                >
+                  <div class="d-flex align-center">
+                    <v-icon start size="small">mdi-information-outline</v-icon>
+                    <span class="text-body-2">
+                      This request will be routed to <strong>{{ selectedRequestType.group }}</strong>
+                    </span>
+                  </div>
+                </v-alert>
               </div>
 
-              <!-- Step 2: Details -->
-              <div v-show="currentStep === 2" class="step-content">
-                <div class="mb-6">
-                  <h3 class="text-h6 mb-2">Provide Request Details</h3>
-                  <p class="text-body-2 text-medium-emphasis mb-4">
-                    Help us understand your request better
-                  </p>
-                </div>
+              <v-divider class="my-6"></v-divider>
+
+              <!-- Request Details Section -->
+              <div class="mb-6">
+                <h3 class="text-h6 mb-2">Request Details</h3>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  Provide detailed information about your request
+                </p>
 
                 <v-textarea
                   v-model="form.reason"
@@ -163,7 +127,40 @@
                   required
                   class="mb-4"
                 ></v-textarea>
+              </div>
+
+              <v-divider class="my-6"></v-divider>
+
+              <!-- Additional Options -->
+              <div class="mb-6">
+                <h3 class="text-h6 mb-2">Additional Information</h3>
                 
+                <!-- CC Field -->
+                <v-combobox
+                  v-model="form.cc_emails"
+                  :items="[]"
+                  label="CC (Mention Others)"
+                  variant="outlined"
+                  prepend-inner-icon="mdi-account-plus-outline"
+                  multiple
+                  chips
+                  closable-chips
+                  hint="Add email addresses of people who should be notified about this ticket"
+                  persistent-hint
+                  class="mb-4"
+                >
+                  <template v-slot:chip="{ props, item }">
+                    <v-chip
+                      v-bind="props"
+                      :prepend-icon="validateEmail(item.raw) ? 'mdi-email' : 'mdi-alert'"
+                      :color="validateEmail(item.raw) ? 'primary' : 'error'"
+                    >
+                      {{ item.raw }}
+                    </v-chip>
+                  </template>
+                </v-combobox>
+
+                <!-- Attachment -->
                 <div class="mb-4">
                   <div class="text-body-2 font-weight-medium mb-3">
                     <v-icon size="small" class="mr-1">mdi-paperclip</v-icon>
@@ -174,110 +171,22 @@
                     label="Upload supporting documents"
                   />
                 </div>
-
-                <div class="d-flex justify-space-between mt-6">
-                  <v-btn
-                    variant="outlined"
-                    size="large"
-                    @click="currentStep = 1"
-                  >
-                    <v-icon start>mdi-arrow-left</v-icon>
-                    Back
-                  </v-btn>
-                  <v-btn
-                    color="primary"
-                    size="large"
-                    :disabled="!form.reason || form.reason.length < 10 || !form.description || form.description.length < 20"
-                    @click="currentStep = 3"
-                  >
-                    Next: Review
-                    <v-icon end>mdi-arrow-right</v-icon>
-                  </v-btn>
-                </div>
               </div>
 
-              <!-- Step 3: Review -->
-              <div v-show="currentStep === 3" class="step-content">
-                <div class="mb-6">
-                  <h3 class="text-h6 mb-2">Review Your Request</h3>
-                  <p class="text-body-2 text-medium-emphasis mb-4">
-                    Please verify all information before submitting
-                  </p>
-                </div>
+              <v-divider class="my-6"></v-divider>
 
-                <v-card elevation="0" color="surface-variant" class="mb-4">
-                  <v-card-text class="pa-4">
-                    <div class="review-item mb-4">
-                      <div class="text-caption text-medium-emphasis mb-1">Request Type</div>
-                      <div class="d-flex align-center">
-                        <v-chip
-                          :color="getRequestTypeColor(form.request_type)"
-                          variant="tonal"
-                        >
-                          <v-icon start size="small">{{ getRequestTypeIcon(form.request_type) }}</v-icon>
-                          {{ form.request_type === 'Other' ? form.custom_request_type : form.request_type }}
-                        </v-chip>
-                      </div>
-                    </div>
-
-                    <v-divider class="my-4"></v-divider>
-
-                    <div class="review-item mb-4">
-                      <div class="text-caption text-medium-emphasis mb-1">Reason</div>
-                      <p class="text-body-2 mb-0">{{ form.reason }}</p>
-                    </div>
-
-                    <v-divider class="my-4"></v-divider>
-
-                    <div class="review-item mb-4">
-                      <div class="text-caption text-medium-emphasis mb-1">Description</div>
-                      <p class="text-body-2 mb-0">{{ form.description }}</p>
-                    </div>
-
-                    <v-divider v-if="form.attachment" class="my-4"></v-divider>
-
-                    <div v-if="form.attachment" class="review-item">
-                      <div class="text-caption text-medium-emphasis mb-1">Attachment</div>
-                      <v-chip variant="outlined" prepend-icon="mdi-file-document-outline">
-                        {{ form.attachment.name }}
-                      </v-chip>
-                    </div>
-                  </v-card-text>
-                </v-card>
-
-                <v-alert
-                  type="info"
-                  variant="tonal"
-                  density="compact"
-                  class="mb-4"
+              <!-- Submit Button -->
+              <div class="d-flex justify-end">
+                <v-btn
+                  color="primary"
+                  size="large"
+                  :loading="loading"
+                  :disabled="!valid || loading"
+                  @click="handleSubmit"
                 >
-                  <div class="d-flex align-center">
-                    <v-icon start>mdi-information-outline</v-icon>
-                    <span class="text-body-2">You'll receive email notifications about your ticket status</span>
-                  </div>
-                </v-alert>
-
-                <div class="d-flex justify-space-between mt-6">
-                  <v-btn
-                    variant="outlined"
-                    size="large"
-                    @click="currentStep = 2"
-                    :disabled="loading"
-                  >
-                    <v-icon start>mdi-arrow-left</v-icon>
-                    Back
-                  </v-btn>
-                  <v-btn
-                    color="primary"
-                    size="large"
-                    :loading="loading"
-                    :disabled="!valid || loading"
-                    @click="handleSubmit"
-                  >
-                    <v-icon start>mdi-send</v-icon>
-                    Submit Request
-                  </v-btn>
-                </div>
+                  <v-icon start>mdi-send</v-icon>
+                  Submit Request
+                </v-btn>
               </div>
             </v-form>
           </v-card-text>
@@ -395,46 +304,154 @@ export default {
     return {
       valid: false,
       loading: false,
-      currentStep: 1,
       successSnackbar: false,
       successMessage: '',
       errorSnackbar: false,
       errorMessage: '',
-      requestTypes: [
+      requestTypeGroups: [
         {
-          value: 'Application Database Access',
-          label: 'Application Database Access',
-          icon: 'mdi-database',
-          color: 'purple',
-          description: 'Request access to application databases and schemas'
+          group: 'IT Administration',
+          email: 'techsupport@summitbankng.com',
+          types: [
+            {
+              value: 'Application Database Access',
+              title: 'Application Database Access',
+              icon: 'mdi-database',
+              color: 'purple',
+              description: 'Request access to application databases and schemas'
+            },
+            {
+              value: 'System Permissions',
+              title: 'System Permissions',
+              icon: 'mdi-shield-account',
+              color: 'blue',
+              description: 'Request elevated permissions or access rights'
+            },
+            {
+              value: 'API Access',
+              title: 'API Access',
+              icon: 'mdi-api',
+              color: 'teal',
+              description: 'Get API keys or integration access'
+            }
+          ]
         },
         {
-          value: 'Password Recovery',
-          label: 'Password Recovery',
-          icon: 'mdi-lock-reset',
-          color: 'orange',
-          description: 'Reset or recover passwords for your accounts'
+          group: 'IT Support',
+          email: 'techsupport@summitbankng.com',
+          types: [
+            {
+              value: 'Password Recovery',
+              title: 'Password Recovery',
+              icon: 'mdi-lock-reset',
+              color: 'orange',
+              description: 'Reset or recover passwords for your accounts'
+            }
+          ]
         },
         {
-          value: 'System Permissions',
-          label: 'System Permissions',
-          icon: 'mdi-shield-account',
-          color: 'blue',
-          description: 'Request elevated permissions or access rights'
+          group: 'Digital Banking',
+          email: 'digitalbankingsupport@summitbankng.com',
+          types: [
+            {
+              value: 'Other',
+              title: 'Digital Banking - Performance Issues',
+              icon: 'mdi-speedometer',
+              color: 'indigo',
+              description: 'Report performance issues with digital banking applications',
+              custom_value: 'Performance issues'
+            },
+            {
+              value: 'Other',
+              title: 'Digital Banking - POS Application Issues',
+              icon: 'mdi-credit-card-scan',
+              color: 'indigo',
+              description: 'Issues with POS application functionality',
+              custom_value: 'POS Application Issues'
+            },
+            {
+              value: 'Other',
+              title: 'Digital Banking - POS Hardware Issues',
+              icon: 'mdi-devices',
+              color: 'indigo',
+              description: 'Hardware problems with POS devices',
+              custom_value: 'POS Hardware Issues'
+            },
+            {
+              value: 'Other',
+              title: 'Digital Banking - Account Access/Unlock',
+              icon: 'mdi-account-lock',
+              color: 'indigo',
+              description: 'Unable to access application or unlock account',
+              custom_value: 'Unable to Access Application/Unlock Account'
+            },
+            {
+              value: 'Other',
+              title: 'Digital Banking - User Account Management',
+              icon: 'mdi-account-cog',
+              color: 'indigo',
+              description: 'User account creation or deletion requests',
+              custom_value: 'User Account Creation/Deletion'
+            }
+          ]
         },
         {
-          value: 'API Access',
-          label: 'API Access',
-          icon: 'mdi-api',
-          color: 'teal',
-          description: 'Get API keys or integration access'
+          group: 'Card Services',
+          email: 'cardservices@summitbankng.com',
+          types: [
+            {
+              value: 'Other',
+              title: 'Card Services - Instant Card Stock',
+              icon: 'mdi-card-account-details',
+              color: 'pink',
+              description: 'Request for instant card stock',
+              custom_value: 'Request for Instant Card Stock'
+            },
+            {
+              value: 'Other',
+              title: 'Card Services - Personalized Cards',
+              icon: 'mdi-card-text',
+              color: 'pink',
+              description: 'Request for personalized cards',
+              custom_value: 'Request for Personalized Cards'
+            }
+          ]
         },
         {
-          value: 'Other',
-          label: 'Other Request',
-          icon: 'mdi-dots-horizontal',
-          color: 'grey',
-          description: 'Submit a different type of request'
+          group: 'Data Analytics',
+          email: 'dataanalytics@summitbankng.com',
+          types: [
+            {
+              value: 'Other',
+              title: 'Data Analytics - Report Configuration',
+              icon: 'mdi-chart-box',
+              color: 'cyan',
+              description: 'Request for report configuration',
+              custom_value: 'Report Configuration Request'
+            },
+            {
+              value: 'Other',
+              title: 'Data Analytics - Dashboard Request',
+              icon: 'mdi-view-dashboard',
+              color: 'cyan',
+              description: 'Request for dashboard creation or modification',
+              custom_value: 'Dashboard Request'
+            }
+          ]
+        },
+        {
+          group: 'ATM Support',
+          email: 'atmsupport@summitbankng.com',
+          types: [
+            {
+              value: 'Other',
+              title: 'ATM - Configuration/Support',
+              icon: 'mdi-cash-multiple',
+              color: 'green',
+              description: 'ATM configuration, support, or requests',
+              custom_value: 'Configuration/Support/Requests'
+            }
+          ]
         }
       ],
       tips: [
@@ -468,15 +485,61 @@ export default {
         custom_request_type: '',
         reason: '',
         description: '',
-        attachment: null
+        attachment: null,
+        cc_emails: []
       }
+    }
+  },
+  computed: {
+    requestTypeItems() {
+      const items = []
+      this.requestTypeGroups.forEach(group => {
+        group.types.forEach(type => {
+          items.push({
+            ...type,
+            group: group.group,
+            title: type.title
+          })
+        })
+      })
+      return items
+    },
+    selectedRequestType() {
+      if (!this.form.request_type) return null
+      const item = this.requestTypeItems.find(item => item.value === this.form.request_type)
+      if (item && item.custom_value) {
+        // For "Other" types with custom_value, set the custom_request_type
+        this.form.custom_request_type = item.custom_value
+      }
+      return item
     }
   },
   methods: {
     ...mapActions('tickets', ['createTicket']),
+    validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      return re.test(email)
+    },
     async handleSubmit() {
       if (!this.$refs.form.validate()) {
         return
+      }
+      
+      // Additional validation: ensure custom_request_type is provided when request_type is "Other"
+      if (this.form.request_type === 'Other' && !this.form.custom_request_type?.trim()) {
+        this.errorMessage = 'Custom request type is required when request type is "Other"'
+        this.errorSnackbar = true
+        return
+      }
+
+      // Validate CC emails
+      if (this.form.cc_emails && this.form.cc_emails.length > 0) {
+        const invalidEmails = this.form.cc_emails.filter(email => !this.validateEmail(email))
+        if (invalidEmails.length > 0) {
+          this.errorMessage = `Invalid email addresses: ${invalidEmails.join(', ')}`
+          this.errorSnackbar = true
+          return
+        }
       }
       
       this.loading = true
@@ -487,11 +550,16 @@ export default {
         formData.append('description', this.form.description)
         
         if (this.form.request_type === 'Other') {
-          formData.append('custom_request_type', this.form.custom_request_type)
+          formData.append('custom_request_type', this.form.custom_request_type.trim())
         }
         
         if (this.form.attachment) {
           formData.append('attachment', this.form.attachment)
+        }
+
+        // Add CC emails if provided
+        if (this.form.cc_emails && this.form.cc_emails.length > 0) {
+          formData.append('cc_emails', JSON.stringify(this.form.cc_emails))
         }
         
         const result = await this.createTicket(formData)
@@ -512,40 +580,12 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    getRequestTypeColor(type) {
-      const typeObj = this.requestTypes.find(t => t.value === type)
-      return typeObj?.color || 'grey'
-    },
-    getRequestTypeIcon(type) {
-      const typeObj = this.requestTypes.find(t => t.value === type)
-      return typeObj?.icon || 'mdi-help-circle'
     }
   }
 }
 </script>
 
 <style scoped>
-.request-type-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
-}
-
-.request-type-card:hover {
-  border-color: rgba(var(--v-theme-primary), 0.3);
-  transform: translateY(-2px);
-}
-
-.request-type-card.selected {
-  border-color: rgb(var(--v-theme-primary));
-  background-color: rgba(var(--v-theme-primary), 0.05);
-}
-
-.request-type-group :deep(.v-radio) {
-  pointer-events: none;
-}
-
 .step-content {
   animation: fadeIn 0.3s ease-in;
 }

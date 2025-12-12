@@ -25,7 +25,7 @@ export default {
     },
     accept: {
       type: String,
-      default: '.pdf,.doc,.docx,.jpg,.jpeg,.png'
+      default: '.jpeg,.jpg,.png,.gif,.pdf,.doc,.docx,.txt,.csv,.xlsx,.xls'
     },
     required: {
       type: Boolean,

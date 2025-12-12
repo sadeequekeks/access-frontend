@@ -22,6 +22,19 @@
           <v-list-item-title>Created</v-list-item-title>
           <v-list-item-subtitle>{{ formatDate(ticket.created_at) }}</v-list-item-subtitle>
         </v-list-item>
+        <v-list-item>
+          <v-list-item-title>SLA Elapsed</v-list-item-title>
+          <v-list-item-subtitle>
+            <v-chip
+              :color="getSLAColor(slaElapsed)"
+              variant="tonal"
+              size="small"
+              prepend-icon="mdi-clock-outline"
+            >
+              {{ formatSLAElapsed(slaElapsed) }}
+            </v-chip>
+          </v-list-item-subtitle>
+        </v-list-item>
         <v-list-item v-if="ticket.resolution_time">
           <v-list-item-title>Resolution Time</v-list-item-title>
           <v-list-item-subtitle>{{ formatDuration(ticket.resolution_time) }}</v-list-item-subtitle>
@@ -49,6 +62,14 @@ export default {
       required: true
     }
   },
+  computed: {
+    slaElapsed() {
+      if (!this.ticket.created_at) return 0
+      const created = new Date(this.ticket.created_at)
+      const now = this.ticket.resolved_at ? new Date(this.ticket.resolved_at) : new Date()
+      return Math.floor((now - created) / 1000) // Return in seconds
+    }
+  },
   methods: {
     formatDate(dateString) {
       if (!dateString) return 'N/A'
@@ -63,6 +84,25 @@ export default {
         return `${hours}h ${minutes}m`
       }
       return `${minutes}m`
+    },
+    formatSLAElapsed(seconds) {
+      if (!seconds) return '0m'
+      const days = Math.floor(seconds / 86400)
+      const hours = Math.floor((seconds % 86400) / 3600)
+      const minutes = Math.floor((seconds % 3600) / 60)
+      
+      if (days > 0) {
+        return `${days}d ${hours}h`
+      } else if (hours > 0) {
+        return `${hours}h ${minutes}m`
+      }
+      return `${minutes}m`
+    },
+    getSLAColor(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'success'
+      if (hours < 48) return 'warning'
+      return 'error'
     }
   }
 }

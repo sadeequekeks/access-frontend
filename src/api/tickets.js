@@ -28,5 +28,8 @@ export default {
   },
   close(id) {
     return api.put(`/tickets/${id}/close`)
+  },
+  getMentionedTickets() {
+    return api.get('/tickets/mentioned')
   }
 }

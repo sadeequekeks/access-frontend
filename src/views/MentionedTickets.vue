@@ -3,7 +3,12 @@
     <v-row>
       <v-col cols="12">
         <div class="d-flex justify-space-between align-center mb-4">
-          <h1 class="text-h4">My Tickets</h1>
+          <div>
+            <h1 class="text-h4 mb-2">Tickets I'm Mentioned In</h1>
+            <p class="text-body-2 text-medium-emphasis">
+              Tickets where you've been CC'd or mentioned
+            </p>
+          </div>
           <v-text-field
             v-model="search"
             prepend-inner-icon="mdi-magnify"
@@ -25,12 +30,11 @@
           <p class="mt-4 text-body-2 text-medium-emphasis">Loading tickets...</p>
         </div>
         <div v-else-if="filteredTickets.length === 0" class="text-center py-12">
-          <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-ticket-outline</v-icon>
-          <p class="text-h6 mb-2">No tickets found</p>
-          <p class="text-body-2 text-medium-emphasis mb-4">You haven't created any tickets yet.</p>
-          <v-btn color="primary" @click="$router.push('/tickets/create')">
-            Create Your First Ticket
-          </v-btn>
+          <v-icon size="64" color="grey-lighten-1" class="mb-4">mdi-account-outline</v-icon>
+          <p class="text-h6 mb-2">No Tickets Found</p>
+          <p class="text-body-2 text-medium-emphasis mb-4">
+            You haven't been mentioned in any tickets yet.
+          </p>
         </div>
         <div v-else>
           <!-- Pending Tickets -->
@@ -83,22 +87,24 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import TicketCard from '@/components/TicketCard.vue'
+import ticketsAPI from '@/api/tickets'
 
 export default {
-  name: 'MyTickets',
+  name: 'MentionedTickets',
   components: {
     TicketCard
   },
   data() {
     return {
       loading: false,
-      search: ''
+      search: '',
+      mentionedTickets: []
     }
   },
   computed: {
-    ...mapGetters('tickets', ['tickets']),
+    ...mapGetters('auth', ['user']),
     filteredTickets() {
-      let filtered = [...this.tickets]
+      let filtered = [...this.mentionedTickets]
       
       // Filter by search
       if (this.search) {
@@ -137,9 +143,30 @@ export default {
     async loadTickets() {
       this.loading = true
       try {
-        await this.fetchMyTickets()
+        // Try to fetch from dedicated endpoint first
+        try {
+          const response = await ticketsAPI.getMentionedTickets()
+          this.mentionedTickets = response.data.tickets || response.data || []
+        } catch (apiError) {
+          // Fallback: Fetch all tickets and filter by CC emails
+          const allTickets = await this.fetchMyTickets()
+          
+          // Filter tickets where current user is in CC list
+          if (this.user?.email) {
+            this.mentionedTickets = allTickets.filter(ticket => {
+              if (!ticket.cc_emails) return false
+              const ccEmails = Array.isArray(ticket.cc_emails) 
+                ? ticket.cc_emails 
+                : JSON.parse(ticket.cc_emails || '[]')
+              return ccEmails.includes(this.user.email)
+            })
+          } else {
+            this.mentionedTickets = []
+          }
+        }
       } catch (error) {
-        console.error('Failed to load tickets:', error)
+        console.error('Failed to load mentioned tickets:', error)
+        this.mentionedTickets = []
       } finally {
         this.loading = false
       }

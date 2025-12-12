@@ -50,6 +50,12 @@
           @click="$router.push('/tickets')"
         ></v-list-item>
         <v-list-item
+          prepend-icon="mdi-account-plus"
+          title="Tickets I'm Mentioned In"
+          value="mentioned"
+          @click="$router.push('/tickets/mentioned')"
+        ></v-list-item>
+        <v-list-item
           prepend-icon="mdi-plus-circle"
           title="Create Ticket"
           value="create"
