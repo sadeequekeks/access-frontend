@@ -45,32 +45,18 @@
                   class="mb-4"
                 >
                   <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props">
+                    <v-list-item v-bind="props" :key="item.raw.uniqueId">
                       <template v-slot:prepend>
                         <v-icon :color="item.raw.color" class="mr-3">{{ item.raw.icon }}</v-icon>
                       </template>
                       <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
-                      <v-list-item-subtitle v-if="item.raw.group" class="text-caption">
-                        {{ item.raw.group }}
+                      <v-list-item-subtitle v-if="item.raw.description" class="text-caption">
+                        {{ item.raw.description }}
                       </v-list-item-subtitle>
                     </v-list-item>
                   </template>
                 </v-select>
                 
-                <v-text-field
-                  v-if="form.request_type === 'Other'"
-                  v-model="form.custom_request_type"
-                  label="Specify Custom Request Type"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-pencil"
-                  :rules="[
-                    v => form.request_type !== 'Other' || !!v || 'Custom request type is required'
-                  ]"
-                  required
-                  hint="Enter the specific type of request"
-                  persistent-hint
-                ></v-text-field>
-
                 <v-alert
                   v-if="selectedRequestType"
                   type="info"
@@ -82,6 +68,9 @@
                     <v-icon start size="small">mdi-information-outline</v-icon>
                     <span class="text-body-2">
                       This request will be routed to <strong>{{ selectedRequestType.group }}</strong>
+                      <span v-if="selectedRequestType.email" class="ml-2 text-caption">
+                        ({{ selectedRequestType.email }})
+                      </span>
                     </span>
                   </div>
                 </v-alert>
@@ -108,6 +97,8 @@
                   counter
                   rows="3"
                   placeholder="Briefly explain why you need this access..."
+                  hint="Provide a clear explanation for your access request (minimum 10 characters)"
+                  persistent-hint
                   required
                   class="mb-4"
                 ></v-textarea>
@@ -124,6 +115,8 @@
                   counter
                   rows="5"
                   placeholder="Provide detailed information about your request..."
+                  hint="Include all relevant details, requirements, and context for your request (minimum 20 characters)"
+                  persistent-hint
                   required
                   class="mb-4"
                 ></v-textarea>
@@ -139,7 +132,7 @@
                 <v-combobox
                   v-model="form.cc_emails"
                   :items="[]"
-                  label="CC (Mention Others)"
+                  label="CC Recipients"
                   variant="outlined"
                   prepend-inner-icon="mdi-account-plus-outline"
                   multiple
@@ -310,146 +303,331 @@ export default {
       errorMessage: '',
       requestTypeGroups: [
         {
-          group: 'IT Administration',
-          email: 'techsupport@summitbankng.com',
-          types: [
-            {
-              value: 'Application Database Access',
-              title: 'Application Database Access',
-              icon: 'mdi-database',
-              color: 'purple',
-              description: 'Request access to application databases and schemas'
-            },
-            {
-              value: 'System Permissions',
-              title: 'System Permissions',
-              icon: 'mdi-shield-account',
-              color: 'blue',
-              description: 'Request elevated permissions or access rights'
-            },
-            {
-              value: 'API Access',
-              title: 'API Access',
-              icon: 'mdi-api',
-              color: 'teal',
-              description: 'Get API keys or integration access'
-            }
-          ]
-        },
-        {
-          group: 'IT Support',
-          email: 'techsupport@summitbankng.com',
-          types: [
-            {
-              value: 'Password Recovery',
-              title: 'Password Recovery',
-              icon: 'mdi-lock-reset',
-              color: 'orange',
-              description: 'Reset or recover passwords for your accounts'
-            }
-          ]
-        },
-        {
           group: 'Digital Banking',
-          email: 'digitalbankingsupport@summitbankng.com',
           types: [
             {
-              value: 'Other',
-              title: 'Digital Banking - Performance Issues',
+              value: 'Performance issues',
+              title: 'Performance Issues',
               icon: 'mdi-speedometer',
               color: 'indigo',
               description: 'Report performance issues with digital banking applications',
-              custom_value: 'Performance issues'
+              email: 'digitalbankingsupport@summitbankng.com'
             },
             {
-              value: 'Other',
-              title: 'Digital Banking - POS Application Issues',
+              value: 'POS Application Issues',
+              title: 'POS Application Issues',
               icon: 'mdi-credit-card-scan',
               color: 'indigo',
               description: 'Issues with POS application functionality',
-              custom_value: 'POS Application Issues'
+              email: 'possupport@summitbankng.com'
             },
             {
-              value: 'Other',
-              title: 'Digital Banking - POS Hardware Issues',
+              value: 'POS Hardware Issues',
+              title: 'POS Hardware Issues',
               icon: 'mdi-devices',
               color: 'indigo',
               description: 'Hardware problems with POS devices',
-              custom_value: 'POS Hardware Issues'
+              email: 'possupport@summitbankng.com'
             },
             {
-              value: 'Other',
-              title: 'Digital Banking - Account Access/Unlock',
+              value: 'Unable to Access Application/Unlock Account',
+              title: 'Account Access/Unlock',
               icon: 'mdi-account-lock',
               color: 'indigo',
               description: 'Unable to access application or unlock account',
-              custom_value: 'Unable to Access Application/Unlock Account'
+              email: 'digitalbankingsupport@summitbankng.com'
             },
             {
-              value: 'Other',
-              title: 'Digital Banking - User Account Management',
-              icon: 'mdi-account-cog',
-              color: 'indigo',
-              description: 'User account creation or deletion requests',
-              custom_value: 'User Account Creation/Deletion'
-            }
-          ]
-        },
-        {
-          group: 'Card Services',
-          email: 'cardservices@summitbankng.com',
-          types: [
-            {
-              value: 'Other',
-              title: 'Card Services - Instant Card Stock',
+              value: 'Request for Instant Card Stock',
+              title: 'Instant Card Stock',
               icon: 'mdi-card-account-details',
               color: 'pink',
               description: 'Request for instant card stock',
-              custom_value: 'Request for Instant Card Stock'
+              email: 'cardservices@summitbankng.com'
             },
             {
-              value: 'Other',
-              title: 'Card Services - Personalized Cards',
+              value: 'Request for Personalized Cards',
+              title: 'Personalized Cards',
               icon: 'mdi-card-text',
               color: 'pink',
               description: 'Request for personalized cards',
-              custom_value: 'Request for Personalized Cards'
+              email: 'cardservices@summitbankng.com'
+            },
+            {
+              value: 'User Account Creation/Deletion',
+              title: 'User Account Management',
+              icon: 'mdi-account-cog',
+              color: 'indigo',
+              description: 'User account creation or deletion requests',
+              email: 'digitalbankingsupport@summitbankng.com'
+            },
+            {
+              value: 'POS Merchant/Agent request Abuja & Lagos',
+              title: 'POS Merchant/Agent (Abuja & Lagos)',
+              icon: 'mdi-store',
+              color: 'indigo',
+              description: 'POS merchant or agent requests for Abuja and Lagos',
+              email: 'possupport@summitbankng.com'
+            },
+            {
+              value: 'POS Merchant/Agent request Kano & Kaduna',
+              title: 'POS Merchant/Agent (Kano & Kaduna)',
+              icon: 'mdi-store',
+              color: 'indigo',
+              description: 'POS merchant or agent requests for Kano and Kaduna',
+              email: 'PosBusinessKano.Kaduna@summitbankng.com'
+            },
+            {
+              value: 'Mobile & Internet Banking Support (Limit, Profiling, Reset, Deactivation)',
+              title: 'Mobile & Internet Banking Support',
+              icon: 'mdi-cellphone-cog',
+              color: 'indigo',
+              description: 'Limit, profiling, reset, or deactivation requests',
+              email: 'digitalchannels@summitbankng.com'
+            },
+            {
+              value: 'Corporate Communications',
+              title: 'Corporate Communications',
+              icon: 'mdi-bullhorn',
+              color: 'indigo',
+              description: 'Corporate communications requests',
+              email: 'corporatecommunications@summitbankng.com'
             }
           ]
         },
         {
-          group: 'Data Analytics',
-          email: 'dataanalytics@summitbankng.com',
+          group: 'Data Analytics Engineering',
           types: [
             {
-              value: 'Other',
-              title: 'Data Analytics - Report Configuration',
+              value: 'Report Configuration Request',
+              title: 'Report Configuration',
               icon: 'mdi-chart-box',
               color: 'cyan',
               description: 'Request for report configuration',
-              custom_value: 'Report Configuration Request'
+              email: 'dataanalytics@summitbankng.com'
             },
             {
-              value: 'Other',
-              title: 'Data Analytics - Dashboard Request',
+              value: 'Dashboard Request',
+              title: 'Dashboard Request',
               icon: 'mdi-view-dashboard',
               color: 'cyan',
               description: 'Request for dashboard creation or modification',
-              custom_value: 'Dashboard Request'
+              email: 'dataanalytics@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'IT Administration',
+          types: [
+            {
+              value: 'Core Banking Support',
+              title: 'Core Banking Support',
+              icon: 'mdi-bank',
+              color: 'purple',
+              description: 'Core banking system support requests',
+              email: 'techsupport@summitbankng.com'
+            },
+            {
+              value: 'Software Engineering',
+              title: 'Software Engineering',
+              icon: 'mdi-code-braces',
+              color: 'blue',
+              description: 'Software engineering and development support',
+              email: 'softwaresupport@summitbankng.com'
             }
           ]
         },
         {
           group: 'ATM Support',
-          email: 'atmsupport@summitbankng.com',
           types: [
             {
-              value: 'Other',
-              title: 'ATM - Configuration/Support',
+              value: 'Configuration/Support/Requests',
+              title: 'ATM Configuration/Support',
               icon: 'mdi-cash-multiple',
               color: 'green',
               description: 'ATM configuration, support, or requests',
-              custom_value: 'Configuration/Support/Requests'
+              email: 'atmsupport@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Operations',
+          types: [
+            {
+              value: 'Settlement Issues (Pending Settlement/ Request for report)',
+              title: 'Settlement Issues',
+              icon: 'mdi-cash-register',
+              color: 'orange',
+              description: 'Pending settlement or request for settlement reports',
+              email: 'settlementoperations@summitbankng.com'
+            },
+            {
+              value: 'Account Opening',
+              title: 'Account Opening',
+              icon: 'mdi-account-plus',
+              color: 'teal',
+              description: 'Account opening requests',
+              email: 'customerexperience@summitbankng.com'
+            },
+            {
+              value: 'Customer Information Update',
+              title: 'Customer Information Update',
+              icon: 'mdi-account-edit',
+              color: 'teal',
+              description: 'Update customer information',
+              email: 'customerexperience@summitbankng.com'
+            },
+            {
+              value: 'Customer Requests',
+              title: 'Customer Requests',
+              icon: 'mdi-account-question',
+              color: 'teal',
+              description: 'General customer service requests',
+              email: 'customerexperience@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'IT Security',
+          types: [
+            {
+              value: 'IT Security Request',
+              title: 'IT Security Request',
+              icon: 'mdi-shield-lock',
+              color: 'red',
+              description: 'IT security and assurance requests',
+              email: 'TechnologyAssurance@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Internal Control',
+          types: [
+            {
+              value: 'Internal Control Request',
+              title: 'Internal Control Request',
+              icon: 'mdi-shield-check',
+              color: 'amber',
+              description: 'Internal audit and control requests',
+              email: 'internal.audit.and.control@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'HR & Admin',
+          types: [
+            {
+              value: 'HR & Admin Request',
+              title: 'HR & Admin Request',
+              icon: 'mdi-account-group',
+              color: 'purple',
+              description: 'Human resources and administration requests',
+              email: 'hr@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Marketing & Business Development',
+          types: [
+            {
+              value: 'Jahi',
+              title: 'Jahi',
+              icon: 'mdi-map-marker',
+              color: 'green',
+              description: 'Business development requests for Jahi',
+              email: 'BDTJAHI@summitbankng.com'
+            },
+            {
+              value: 'Wuse',
+              title: 'Wuse',
+              icon: 'mdi-map-marker',
+              color: 'green',
+              description: 'Business development requests for Wuse',
+              email: 'BDTWUSE@summitbankng.com'
+            },
+            {
+              value: 'France Road',
+              title: 'France Road',
+              icon: 'mdi-map-marker',
+              color: 'green',
+              description: 'Business development requests for France Road',
+              email: 'businessdevelopmentfr@summitbankng.com'
+            },
+            {
+              value: 'Lagos',
+              title: 'Lagos',
+              icon: 'mdi-map-marker',
+              color: 'green',
+              description: 'Business development requests for Lagos',
+              email: 'lagosliaisonbusdev@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Financial Control',
+          types: [
+            {
+              value: 'Payment Request (Retirement/Cash Advance)',
+              title: 'Payment Request',
+              icon: 'mdi-cash',
+              color: 'green',
+              description: 'Retirement or cash advance payment requests',
+              email: 'financialcontrol@summitbankng.com'
+            },
+            {
+              value: 'Vendor Payment etc',
+              title: 'Vendor Payment',
+              icon: 'mdi-currency-usd',
+              color: 'green',
+              description: 'Vendor payment and related requests',
+              email: 'financialcontrol@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Treasury',
+          types: [
+            {
+              value: 'Treasury Request',
+              title: 'Treasury Request',
+              icon: 'mdi-treasury',
+              color: 'blue',
+              description: 'Treasury operations and requests',
+              email: 'treasury@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Compliance',
+          types: [
+            {
+              value: 'Regulatory request and Returns',
+              title: 'Regulatory Request and Returns',
+              icon: 'mdi-file-document-check',
+              color: 'amber',
+              description: 'Regulatory requests and returns',
+              email: 'compliance@summitbankng.com'
+            }
+          ]
+        },
+        {
+          group: 'Legal',
+          types: [
+            {
+              value: 'Document Reviews',
+              title: 'Document Reviews',
+              icon: 'mdi-file-document-edit',
+              color: 'blue',
+              description: 'Legal document review requests',
+              email: 'legalservices@summitbankng.com'
+            },
+            {
+              value: 'Company Secretary Signing',
+              title: 'Company Secretary Signing',
+              icon: 'mdi-signature',
+              color: 'blue',
+              description: 'Company secretary signing requests',
+              email: 'legalservices@summitbankng.com'
             }
           ]
         }
@@ -482,7 +660,6 @@ export default {
       ],
       form: {
         request_type: '',
-        custom_request_type: '',
         reason: '',
         description: '',
         attachment: null,
@@ -493,12 +670,14 @@ export default {
   computed: {
     requestTypeItems() {
       const items = []
-      this.requestTypeGroups.forEach(group => {
-        group.types.forEach(type => {
+      this.requestTypeGroups.forEach((group, groupIndex) => {
+        group.types.forEach((type, typeIndex) => {
           items.push({
             ...type,
             group: group.group,
-            title: type.title
+            title: type.title,
+            uniqueId: `${groupIndex}-${typeIndex}`,
+            value: type.value
           })
         })
       })
@@ -506,12 +685,7 @@ export default {
     },
     selectedRequestType() {
       if (!this.form.request_type) return null
-      const item = this.requestTypeItems.find(item => item.value === this.form.request_type)
-      if (item && item.custom_value) {
-        // For "Other" types with custom_value, set the custom_request_type
-        this.form.custom_request_type = item.custom_value
-      }
-      return item
+      return this.requestTypeItems.find(item => item.value === this.form.request_type)
     }
   },
   methods: {
@@ -522,13 +696,6 @@ export default {
     },
     async handleSubmit() {
       if (!this.$refs.form.validate()) {
-        return
-      }
-      
-      // Additional validation: ensure custom_request_type is provided when request_type is "Other"
-      if (this.form.request_type === 'Other' && !this.form.custom_request_type?.trim()) {
-        this.errorMessage = 'Custom request type is required when request type is "Other"'
-        this.errorSnackbar = true
         return
       }
 
@@ -545,13 +712,11 @@ export default {
       this.loading = true
       try {
         const formData = new FormData()
+        
+        // Send the exact request_type value as specified in the API
         formData.append('request_type', this.form.request_type)
         formData.append('reason', this.form.reason)
         formData.append('description', this.form.description)
-        
-        if (this.form.request_type === 'Other') {
-          formData.append('custom_request_type', this.form.custom_request_type.trim())
-        }
         
         if (this.form.attachment) {
           formData.append('attachment', this.form.attachment)
