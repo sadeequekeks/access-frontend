@@ -94,6 +94,28 @@
 
               <v-divider class="my-6"></v-divider>
 
+              <!-- Subject Field -->
+              <div class="mb-6">
+                <h3 class="text-h6 mb-2">Subject</h3>
+                <p class="text-body-2 text-medium-emphasis mb-4">
+                  Enter a brief subject for your request
+                </p>
+
+                <v-text-field
+                  v-model="form.subject"
+                  variant="outlined"
+                  prepend-inner-icon="mdi-format-title"
+                  :rules="[v => !!v || 'Subject is required']"
+                  placeholder="Enter subject..."
+                  hint="Provide a clear and concise subject for your request"
+                  persistent-hint
+                  required
+                  class="mb-4"
+                ></v-text-field>
+              </div>
+
+              <v-divider class="my-6"></v-divider>
+
               <!-- Request Details Section -->
               <div class="mb-6">
                 <h3 class="text-h6 mb-2">Request Details</h3>
@@ -102,36 +124,18 @@
                 </p>
 
                 <v-textarea
-                  v-model="form.reason"
-                  variant="outlined"
-                  prepend-inner-icon="mdi-message-text-outline"
-                  :rules="[
-                    v => !!v || 'Reason is required',
-                    v => (v && v.length >= 10) || 'Reason must be at least 10 characters'
-                  ]"
-                  counter
-                  rows="3"
-                  placeholder="Briefly explain why you need this access..."
-                  hint="Provide a clear explanation for your access request (minimum 10 characters)"
-                  persistent-hint
-                  required
-                  class="mb-4"
-                ></v-textarea>
-                
-                <v-textarea
                   v-model="form.description"
                   variant="outlined"
                   prepend-inner-icon="mdi-text-box-outline"
                   :rules="[
-                    v => !!v || 'Description is required',
-                    v => (v && v.length >= 20) || 'Description must be at least 20 characters',
-                    v => (v && v.length <= 500) || 'Description must be 500 characters or less'
+                    v => !!v || 'Request details are required',
+                    v => (v && v.length <= 500) || 'Request details must be 500 characters or less'
                   ]"
                   counter
                   maxlength="500"
                   rows="5"
                   placeholder="Provide detailed information about your request..."
-                  hint="Include all relevant details, requirements, and context for your request (20–500 characters)"
+                  hint="Include all relevant details, requirements, and context for your request (maximum 500 characters)"
                   persistent-hint
                   required
                   class="mb-4"
@@ -256,8 +260,8 @@
               <div class="text-center">
                 <v-icon size="48" color="primary" class="mb-3">mdi-clock-fast</v-icon>
                 <div class="text-h6 mb-2">Quick Response</div>
-                <p class="text-body-2 text-medium-emphasis mb-0">
-                  Most requests are processed within 24-48 hours
+                <p class="text-body-1 mb-0">
+                  <strong class="font-weight-bold" style="font-size: 1.1em;">Most requests are processed within 24-48 hours</strong>
                 </p>
               </div>
             </v-card-text>
@@ -677,7 +681,7 @@ export default {
       form: {
         category: '',
         request_type: '',
-        reason: '',
+        subject: '',
         description: '',
         attachment: null,
         cc_emails: []
@@ -740,7 +744,7 @@ export default {
         
         // Send the exact request_type value as specified in the API
         formData.append('request_type', this.form.request_type)
-        formData.append('reason', this.form.reason)
+        formData.append('subject', this.form.subject)
         formData.append('description', this.form.description)
         
         if (this.form.attachment) {
