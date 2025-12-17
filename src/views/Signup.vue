@@ -97,27 +97,6 @@
               </v-btn>
             </v-form>
 
-            <!-- Divider -->
-            <div class="d-flex align-center my-6">
-              <v-divider></v-divider>
-              <span class="px-4 text-caption text-medium-emphasis">OR</span>
-              <v-divider></v-divider>
-            </div>
-
-            <!-- Social Login Buttons -->
-            <div class="d-flex flex-column gap-3">
-              <v-btn
-                block
-                variant="outlined"
-                size="large"
-                class="text-none"
-                rounded="lg"
-              >
-                <v-icon left class="mr-2">mdi-google</v-icon>
-                Continue with Google
-              </v-btn>
-            </div>
-
             <!-- Login Link -->
             <div class="text-center mt-6">
               <span class="text-body-2 text-medium-emphasis">
@@ -254,7 +233,9 @@ export default {
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #AF1F23
+  0%, #AF1F23
+  100%);
   position: relative;
   overflow: hidden;
 }

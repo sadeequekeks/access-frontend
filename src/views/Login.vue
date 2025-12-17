@@ -5,7 +5,11 @@
       <v-col cols="12" md="6" class="d-none d-md-flex branding-panel">
         <div class="branding-content">
           <div class="logo-container">
-            <v-icon size="48" color="white">mdi-shield-check</v-icon>
+            <img
+              src="https://res.cloudinary.com/summitbank/image/upload/v1757037165/Summit_Logo_2_why0cs.png"
+              alt="Summit Bank"
+              class="brand-logo"
+            />
           </div>
           <h1 class="brand-title">Secure Banking</h1>
           <p class="brand-subtitle">Trust. Security. Excellence.</p>
@@ -32,7 +36,11 @@
           <v-card-text class="pa-8 pa-sm-12">
             <!-- Mobile Logo -->
             <div class="mobile-logo d-md-none text-center mb-6">
-              <v-icon size="40" color="primary">mdi-shield-check</v-icon>
+              <img
+                src="https://res.cloudinary.com/summitbank/image/upload/v1757037165/Summit_Logo_2_why0cs.png"
+                alt="Summit Bank"
+                class="mobile-brand-logo"
+              />
               <h2 class="text-h5 mt-2 font-weight-bold">Secure Banking</h2>
             </div>
 
@@ -121,7 +129,7 @@
             <div class="security-badge mt-8 text-center">
               <v-icon size="16" color="success" class="mr-1">mdi-shield-check</v-icon>
               <span class="text-caption text-medium-emphasis">
-                Protected by 256-bit SSL encryption
+                Summit Bank Secure Login
               </span>
             </div>
           </v-card-text>
@@ -236,7 +244,7 @@ export default {
 
 /* Branding Panel */
 .branding-panel {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background: linear-gradient(135deg, #AF1F23 0%, #AF1F23 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,8 +285,8 @@ export default {
 .logo-container {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
-  width: 80px;
-  height: 80px;
+  width: 200px;
+  height: 200px;
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -364,6 +372,20 @@ export default {
 
 .mobile-logo {
   color: #1e3c72;
+}
+
+.brand-logo {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  display: block;
+}
+
+.mobile-brand-logo {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  display: inline-block;
 }
 
 /* Responsive */

@@ -26,30 +26,46 @@
         <v-card elevation="0" border>
           <v-card-text class="pa-6">
             <v-form ref="form" v-model="valid" @submit.prevent="handleSubmit">
-              <!-- Request Type Dropdown -->
+              <!-- Category & Request Type Dropdowns -->
               <div class="mb-6">
                 <h3 class="text-h6 mb-2">Request Type</h3>
                 <p class="text-body-2 text-medium-emphasis mb-4">
                   Select the category and type of request
                 </p>
+
+                <!-- Category Dropdown -->
+                <v-select
+                  v-model="form.category"
+                  :items="requestTypeGroups"
+                  item-title="group"
+                  item-value="group"
+                  label="Select Category"
+                  variant="outlined"
+                  prepend-inner-icon="mdi-folder-outline"
+                  :rules="[v => !!v || 'Category is required']"
+                  required
+                  class="mb-4"
+                ></v-select>
+
+                <!-- Request Type Dropdown (filtered by category) -->
                 <v-select
                   v-model="form.request_type"
-                  :items="requestTypeItems"
+                  :items="filteredRequestTypes"
                   item-title="title"
                   item-value="value"
-                  variant="outlined"
                   label="Select Request Type"
+                  variant="outlined"
                   prepend-inner-icon="mdi-format-list-bulleted"
                   :rules="[v => !!v || 'Request type is required']"
+                  :disabled="!form.category"
                   required
                   class="mb-4"
                 >
                   <template v-slot:item="{ props, item }">
-                    <v-list-item v-bind="props" :key="item.raw.uniqueId">
+                    <v-list-item v-bind="props" :key="item.raw.value">
                       <template v-slot:prepend>
                         <v-icon :color="item.raw.color" class="mr-3">{{ item.raw.icon }}</v-icon>
                       </template>
-                      <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
                       <v-list-item-subtitle v-if="item.raw.description" class="text-caption">
                         {{ item.raw.description }}
                       </v-list-item-subtitle>
@@ -67,7 +83,7 @@
                   <div class="d-flex align-center">
                     <v-icon start size="small">mdi-information-outline</v-icon>
                     <span class="text-body-2">
-                      This request will be routed to <strong>{{ selectedRequestType.group }}</strong>
+                      This request will be routed to <strong>{{ form.category }}</strong>
                       <span v-if="selectedRequestType.email" class="ml-2 text-caption">
                         ({{ selectedRequestType.email }})
                       </span>
@@ -87,7 +103,6 @@
 
                 <v-textarea
                   v-model="form.reason"
-                  label="Reason for Request"
                   variant="outlined"
                   prepend-inner-icon="mdi-message-text-outline"
                   :rules="[
@@ -105,17 +120,18 @@
                 
                 <v-textarea
                   v-model="form.description"
-                  label="Detailed Description"
                   variant="outlined"
                   prepend-inner-icon="mdi-text-box-outline"
                   :rules="[
                     v => !!v || 'Description is required',
-                    v => (v && v.length >= 20) || 'Description must be at least 20 characters'
+                    v => (v && v.length >= 20) || 'Description must be at least 20 characters',
+                    v => (v && v.length <= 500) || 'Description must be 500 characters or less'
                   ]"
                   counter
+                  maxlength="500"
                   rows="5"
                   placeholder="Provide detailed information about your request..."
-                  hint="Include all relevant details, requirements, and context for your request (minimum 20 characters)"
+                  hint="Include all relevant details, requirements, and context for your request (20–500 characters)"
                   persistent-hint
                   required
                   class="mb-4"
@@ -659,6 +675,7 @@ export default {
         }
       ],
       form: {
+        category: '',
         request_type: '',
         reason: '',
         description: '',
@@ -668,24 +685,18 @@ export default {
     }
   },
   computed: {
-    requestTypeItems() {
-      const items = []
-      this.requestTypeGroups.forEach((group, groupIndex) => {
-        group.types.forEach((type, typeIndex) => {
-          items.push({
-            ...type,
-            group: group.group,
-            title: type.title,
-            uniqueId: `${groupIndex}-${typeIndex}`,
-            value: type.value
-          })
-        })
-      })
-      return items
+    filteredRequestTypes() {
+      if (!this.form.category) return []
+      const categoryGroup = this.requestTypeGroups.find(g => g.group === this.form.category)
+      return categoryGroup ? categoryGroup.types : []
     },
     selectedRequestType() {
       if (!this.form.request_type) return null
-      return this.requestTypeItems.find(item => item.value === this.form.request_type)
+      const allTypes = []
+      this.requestTypeGroups.forEach(group => {
+        allTypes.push(...group.types)
+      })
+      return allTypes.find(item => item.value === this.form.request_type)
     }
   },
   methods: {
@@ -707,6 +718,20 @@ export default {
           this.errorSnackbar = true
           return
         }
+      }
+
+      // Validate attachment size (max 5MB)
+      if (this.form.attachment && this.form.attachment.size > 5242880) {
+        this.errorMessage = 'Attachment must be smaller than 5 MB'
+        this.errorSnackbar = true
+        return
+      }
+
+      // Validate description length (max 500 chars)
+      if (this.form.description && this.form.description.length > 500) {
+        this.errorMessage = 'Description must be 500 characters or less'
+        this.errorSnackbar = true
+        return
       }
       
       this.loading = true

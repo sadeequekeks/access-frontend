@@ -267,11 +267,11 @@
               <div class="text-left">
                 <div class="d-flex align-center mb-2">
                   <v-icon size="small" class="mr-2" color="medium-emphasis">mdi-email</v-icon>
-                  <span class="text-body-2">support@company.com</span>
+                  <span class="text-body-2">Itsupport@summitbankng.com</span>
                 </div>
                 <div class="d-flex align-center">
                   <v-icon size="small" class="mr-2" color="medium-emphasis">mdi-phone</v-icon>
-                  <span class="text-body-2">Extension 1234</span>
+                  <span class="text-body-2">+234 (0) 700 700 0005</span>
                 </div>
               </div>
             </div>
