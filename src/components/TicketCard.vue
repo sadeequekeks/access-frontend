@@ -1,5 +1,33 @@
 <template>
   <v-card class="mb-4" elevation="2">
+    <!-- Prominent SLA Banner -->
+    <v-alert
+      :color="getSLAColor(slaElapsed)"
+      variant="tonal"
+      density="comfortable"
+      class="mb-0"
+      border="start"
+      :border-color="getSLAColor(slaElapsed)"
+    >
+      <div class="d-flex align-center justify-space-between flex-wrap">
+        <div class="d-flex align-center">
+          <v-icon size="32" class="mr-3">{{ getSLAIcon(slaElapsed) }}</v-icon>
+          <div>
+            <div class="text-caption text-medium-emphasis mb-1">SLA Elapsed</div>
+            <div class="text-h5 font-weight-bold">{{ formatSLAElapsed(slaElapsed) }}</div>
+          </div>
+        </div>
+        <v-chip
+          :color="getSLAColor(slaElapsed)"
+          size="large"
+          class="ml-4"
+        >
+          <v-icon start>{{ getSLAStatusIcon(slaElapsed) }}</v-icon>
+          {{ getSLAStatus(slaElapsed) }}
+        </v-chip>
+      </div>
+    </v-alert>
+    
     <v-card-title>
       <div class="d-flex justify-space-between align-center flex-wrap">
         <span class="text-h6">{{ ticket.ticket_number }}</span>
@@ -21,19 +49,6 @@
         <v-list-item>
           <v-list-item-title>Created</v-list-item-title>
           <v-list-item-subtitle>{{ formatDate(ticket.created_at) }}</v-list-item-subtitle>
-        </v-list-item>
-        <v-list-item>
-          <v-list-item-title>SLA Elapsed</v-list-item-title>
-          <v-list-item-subtitle>
-            <v-chip
-              :color="getSLAColor(slaElapsed)"
-              variant="tonal"
-              size="small"
-              prepend-icon="mdi-clock-outline"
-            >
-              {{ formatSLAElapsed(slaElapsed) }}
-            </v-chip>
-          </v-list-item-subtitle>
         </v-list-item>
         <v-list-item v-if="ticket.resolution_time">
           <v-list-item-title>Resolution Time</v-list-item-title>
@@ -103,6 +118,24 @@ export default {
       if (hours < 24) return 'success'
       if (hours < 48) return 'warning'
       return 'error'
+    },
+    getSLAIcon(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'mdi-check-circle'
+      if (hours < 48) return 'mdi-clock-alert'
+      return 'mdi-alert-circle'
+    },
+    getSLAStatusIcon(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'mdi-check'
+      if (hours < 48) return 'mdi-clock-outline'
+      return 'mdi-alert'
+    },
+    getSLAStatus(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'On Track'
+      if (hours < 48) return 'Approaching Limit'
+      return 'Overdue'
     }
   }
 }

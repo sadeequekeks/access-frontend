@@ -16,6 +16,34 @@
     
     <v-row v-else-if="ticket">
       <v-col cols="12">
+        <!-- Prominent SLA Banner -->
+        <v-alert
+          :color="getSLAColor(slaElapsed)"
+          variant="tonal"
+          density="comfortable"
+          class="mb-4"
+          border="start"
+          :border-color="getSLAColor(slaElapsed)"
+        >
+          <div class="d-flex align-center justify-space-between flex-wrap">
+            <div class="d-flex align-center">
+              <v-icon size="40" class="mr-4">{{ getSLAIcon(slaElapsed) }}</v-icon>
+              <div>
+                <div class="text-caption text-medium-emphasis mb-1">SLA Elapsed Time</div>
+                <div class="text-h4 font-weight-bold">{{ formatSLAElapsed(slaElapsed) }}</div>
+              </div>
+            </div>
+            <v-chip
+              :color="getSLAColor(slaElapsed)"
+              size="large"
+              class="ml-4"
+            >
+              <v-icon start>{{ getSLAStatusIcon(slaElapsed) }}</v-icon>
+              {{ getSLAStatus(slaElapsed) }}
+            </v-chip>
+          </div>
+        </v-alert>
+        
         <!-- Ticket Information Card -->
         <v-card class="mb-4">
           <v-card-title class="d-flex justify-space-between align-center flex-wrap">
@@ -154,6 +182,12 @@ export default {
     ...mapGetters('tickets', ['currentTicket']),
     ticket() {
       return this.currentTicket
+    },
+    slaElapsed() {
+      if (!this.ticket?.created_at) return 0
+      const created = new Date(this.ticket.created_at)
+      const now = this.ticket.resolved_at ? new Date(this.ticket.resolved_at) : new Date()
+      return Math.floor((now - created) / 1000) // Return in seconds
     }
   },
   async mounted() {
@@ -192,6 +226,43 @@ export default {
         const url = `${apiUrl}/tickets/${this.ticket.id}/attachment`
         window.open(url, '_blank')
       }
+    },
+    formatSLAElapsed(seconds) {
+      if (!seconds) return '0m'
+      const days = Math.floor(seconds / 86400)
+      const hours = Math.floor((seconds % 86400) / 3600)
+      const minutes = Math.floor((seconds % 3600) / 60)
+      
+      if (days > 0) {
+        return `${days}d ${hours}h`
+      } else if (hours > 0) {
+        return `${hours}h ${minutes}m`
+      }
+      return `${minutes}m`
+    },
+    getSLAColor(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'success'
+      if (hours < 48) return 'warning'
+      return 'error'
+    },
+    getSLAIcon(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'mdi-check-circle'
+      if (hours < 48) return 'mdi-clock-alert'
+      return 'mdi-alert-circle'
+    },
+    getSLAStatusIcon(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'mdi-check'
+      if (hours < 48) return 'mdi-clock-outline'
+      return 'mdi-alert'
+    },
+    getSLAStatus(seconds) {
+      const hours = seconds / 3600
+      if (hours < 24) return 'On Track'
+      if (hours < 48) return 'Approaching Limit'
+      return 'Overdue'
     }
   }
 }
